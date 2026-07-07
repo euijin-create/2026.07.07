@@ -6,27 +6,35 @@
   <title>로또 추첨기</title>
   <style>
     :root {
-      --primary: #0066cc;
-      --primary-focus: #0071e3;
-      --primary-dark: #2997ff;
-      --ink: #1d1d1f;
-      --ink-muted: #7a7a7a;
-      --body-muted: #cccccc;
+      --primary: #00754a;
+      --primary-focus: #006241;
+      --primary-dark: #1e3932;
+      --accent-gold: #cba258;
+      --ink: rgba(0, 0, 0, 0.87);
+      --ink-soft: rgba(0, 0, 0, 0.58);
+      --body-muted: rgba(255, 255, 255, 0.7);
       --canvas: #ffffff;
-      --canvas-parchment: #f5f5f7;
+      --canvas-warm: #f2f0eb;
+      --canvas-ceramic: #edebe9;
       --surface-pearl: #fafafc;
       --surface-black: #000000;
-      --surface-tile-1: #272729;
-      --surface-tile-2: #2a2a2c;
-      --hairline: #e0e0e0;
-      --divider-soft: #f0f0f0;
-      --rounded-sm: 8px;
-      --rounded-md: 11px;
+      --surface-green: #1e3932;
+      --surface-green-2: #2b5148;
+      --surface-green-3: #33433d;
+      --surface-mint: #d4e9e2;
+      --hairline: #d6dbde;
+      --divider-soft: #e7e7e7;
+      --rounded-sm: 4px;
+      --rounded-md: 12px;
       --rounded-lg: 18px;
-      --rounded-pill: 9999px;
-      --shadow-ball: 0 3px 18px rgba(0, 0, 0, 0.22);
-      --nav-height: 44px;
-      --subnav-height: 52px;
+      --rounded-pill: 50px;
+      --shadow-ball: 0 0 0.5px rgba(0, 0, 0, 0.14), 0 1px 1px rgba(0, 0, 0, 0.24);
+      --card-shadow: 0 0 0.5px rgba(0, 0, 0, 0.14), 0 1px 1px rgba(0, 0, 0, 0.24);
+      --nav-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 2px 2px rgba(0, 0, 0, 0.06), 0 0 2px rgba(0, 0, 0, 0.07);
+      --frap-shadow: 0 0 6px rgba(0, 0, 0, 0.24), 0 8px 12px rgba(0, 0, 0, 0.14);
+      --nav-height: 64px;
+      --subnav-height: 53px;
+      --content-max: 1440px;
     }
 
     * {
@@ -39,9 +47,9 @@
     }
 
     body {
-      background: var(--canvas-parchment);
+      background: var(--canvas-warm);
       color: var(--ink);
-      font-family: "SF Pro Text", "SF Pro Display", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: SoDoSans, "Helvetica Neue", Helvetica, Arial, sans-serif;
       -webkit-font-smoothing: antialiased;
       text-rendering: optimizeLegibility;
     }
@@ -65,17 +73,17 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: var(--nav-shadow);
     }
 
     .global-nav__inner {
-      width: min(1440px, calc(100% - 32px));
+      width: min(var(--content-max), calc(100% - 32px));
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 20px;
-      font-size: 12px;
-      letter-spacing: -0.12px;
+      font-size: 14px;
+      letter-spacing: -0.01em;
     }
 
     .global-nav__brand {
@@ -85,7 +93,7 @@
     .global-nav__links {
       display: flex;
       gap: 20px;
-      color: rgba(255, 255, 255, 0.92);
+      color: rgba(255, 255, 255, 0.9);
     }
 
     .global-nav__actions {
@@ -96,13 +104,20 @@
 
     .nav-chip {
       border: 0;
-      padding: 8px 15px;
-      border-radius: var(--rounded-sm);
+      padding: 7px 16px;
+      border-radius: var(--rounded-pill);
       background: #1d1d1f;
       color: #fff;
       font-size: 14px;
-      line-height: 1.29;
+      font-weight: 600;
+      line-height: 1.2;
       cursor: pointer;
+      transform: scale(1);
+      transition: transform 140ms ease, opacity 140ms ease;
+    }
+
+    .nav-chip:active {
+      transform: scale(0.95);
     }
 
     .sub-nav {
@@ -113,13 +128,13 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background: rgba(245, 245, 247, 0.82);
+      background: rgba(242, 240, 235, 0.82);
       backdrop-filter: saturate(180%) blur(20px);
       border-bottom: 1px solid rgba(0, 0, 0, 0.06);
     }
 
     .sub-nav__inner {
-      width: min(1440px, calc(100% - 32px));
+      width: min(var(--content-max), calc(100% - 32px));
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -130,7 +145,7 @@
     .sub-nav__title {
       font-size: 21px;
       font-weight: 600;
-      letter-spacing: 0.231px;
+      letter-spacing: -0.01em;
     }
 
     .sub-nav__links {
@@ -138,15 +153,16 @@
       align-items: center;
       gap: 20px;
       font-size: 14px;
-      line-height: 1.29;
+      line-height: 1.2;
     }
 
     .pill-button {
       border: 0;
       border-radius: var(--rounded-pill);
-      padding: 11px 22px;
-      font-size: 17px;
-      line-height: 1.47;
+      padding: 7px 16px;
+      font-size: 16px;
+      line-height: 1.2;
+      font-weight: 600;
       color: #fff;
       background: var(--primary);
       cursor: pointer;
@@ -165,9 +181,10 @@
     .ghost-pill {
       border: 1px solid var(--primary);
       border-radius: var(--rounded-pill);
-      padding: 11px 22px;
-      font-size: 17px;
-      line-height: 1.47;
+      padding: 7px 16px;
+      font-size: 16px;
+      line-height: 1.2;
+      font-weight: 600;
       color: var(--primary);
       background: #fff;
       cursor: pointer;
@@ -191,7 +208,7 @@
       width: 100%;
       display: flex;
       justify-content: center;
-      padding: 80px 0;
+      padding: 64px 0;
     }
 
     .tile--light {
@@ -200,47 +217,48 @@
     }
 
     .tile--parchment {
-      background: var(--canvas-parchment);
+      background: var(--canvas-ceramic);
       color: var(--ink);
     }
 
     .tile--dark {
-      background: var(--surface-tile-1);
+      background: var(--surface-green);
       color: #fff;
     }
 
     .tile__inner {
-      width: min(1440px, calc(100% - 32px));
+      width: min(var(--content-max), calc(100% - 32px));
       display: grid;
       gap: 32px;
     }
 
     .hero-grid {
-      grid-template-columns: 1.05fr 0.95fr;
+      grid-template-columns: 0.98fr 1.02fr;
       align-items: center;
     }
 
     .eyebrow {
       font-size: 12px;
-      letter-spacing: -0.12px;
-      color: var(--ink-muted);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--ink-soft);
       margin-bottom: 10px;
     }
 
     .hero h1 {
       margin: 0;
-      font-size: clamp(34px, 5vw, 56px);
-      line-height: 1.07;
-      letter-spacing: -0.28px;
+      font-size: clamp(36px, 5vw, 58px);
+      line-height: 1.2;
+      letter-spacing: -0.01em;
       font-weight: 600;
       max-width: 10ch;
     }
 
     .hero p {
       margin: 18px 0 0;
-      font-size: 17px;
-      line-height: 1.47;
-      letter-spacing: -0.374px;
+      font-size: 16px;
+      line-height: 1.5;
+      letter-spacing: -0.01em;
       max-width: 34ch;
       color: var(--ink);
     }
@@ -254,25 +272,26 @@
 
     .hero__meta {
       display: grid;
-      gap: 12px;
+      gap: 16px;
       align-content: start;
       justify-items: end;
     }
 
     .summary-card {
       width: min(100%, 420px);
-      border-radius: var(--rounded-lg);
-      border: 1px solid var(--hairline);
-      background: var(--surface-pearl);
+      border-radius: var(--rounded-md);
+      border: 0;
+      background: var(--canvas);
       padding: 24px;
       display: grid;
       gap: 18px;
+      box-shadow: var(--card-shadow);
     }
 
     .summary-card__label {
       font-size: 14px;
-      line-height: 1.29;
-      color: var(--ink-muted);
+      line-height: 1.2;
+      color: var(--ink-soft);
     }
 
     .summary-card__balls {
@@ -280,6 +299,7 @@
       flex-wrap: wrap;
       gap: 10px;
       align-items: center;
+      min-height: 110px;
     }
 
     .summary-card__stat {
@@ -297,14 +317,14 @@
     .stat__label {
       font-size: 12px;
       line-height: 1;
-      color: var(--ink-muted);
+      color: var(--ink-soft);
     }
 
     .stat__value {
-      font-size: 21px;
-      line-height: 1.19;
+      font-size: 24px;
+      line-height: 1.2;
       font-weight: 600;
-      letter-spacing: 0.231px;
+      letter-spacing: -0.01em;
     }
 
     .lotto-ball {
@@ -315,7 +335,7 @@
       place-items: center;
       font-size: 28px;
       font-weight: 600;
-      letter-spacing: -0.28px;
+      letter-spacing: -0.01em;
       color: #1d1d1f;
       background: var(--ball-fill);
       box-shadow: var(--shadow-ball);
@@ -325,15 +345,15 @@
     }
 
     .lotto-ball--bonus {
-      --ball-fill: #f472b6;
+      --ball-fill: var(--accent-gold);
     }
 
-    .ball-0 { --ball-fill: #facc15; }
-    .ball-1 { --ball-fill: #fb7185; }
-    .ball-2 { --ball-fill: #86efac; }
-    .ball-3 { --ball-fill: #93c5fd; }
-    .ball-4 { --ball-fill: #c4b5fd; }
-    .ball-5 { --ball-fill: #fdba74; }
+    .ball-0 { --ball-fill: #d4e9e2; }
+    .ball-1 { --ball-fill: #cfe3d8; }
+    .ball-2 { --ball-fill: #e8ddd0; }
+    .ball-3 { --ball-fill: #d7e6ec; }
+    .ball-4 { --ball-fill: #f1e3c8; }
+    .ball-5 { --ball-fill: #dcd6cf; }
 
     .machine {
       display: grid;
@@ -344,16 +364,16 @@
     }
 
     .machine__tile {
-      padding: 80px 0;
+      padding: 64px 0;
     }
 
     .machine__tile--dark {
-      background: var(--surface-tile-1);
+      background: var(--surface-green);
       color: #fff;
     }
 
     .machine__tile--dark + .machine__tile--dark {
-      background: var(--surface-tile-2);
+      background: var(--surface-green-2);
     }
 
     .machine__inner {
@@ -367,17 +387,17 @@
 
     .machine h2 {
       margin: 0;
-      font-size: clamp(28px, 4vw, 40px);
-      line-height: 1.1;
+      font-size: clamp(28px, 4vw, 45px);
+      line-height: 1.2;
       font-weight: 600;
-      letter-spacing: 0;
+      letter-spacing: -0.01em;
     }
 
     .machine__lead {
       margin: 0;
-      font-size: 24px;
+      font-size: 19px;
       line-height: 1.5;
-      font-weight: 300;
+      font-weight: 400;
       max-width: 30ch;
       color: inherit;
     }
@@ -400,8 +420,8 @@
     }
 
     .screen__hint {
-      font-size: 17px;
-      line-height: 1.47;
+      font-size: 16px;
+      line-height: 1.5;
       color: #ccc;
     }
 
@@ -419,7 +439,7 @@
     }
 
     .panel-grid {
-      width: min(1440px, calc(100% - 32px));
+      width: min(var(--content-max), calc(100% - 32px));
       margin: 0 auto;
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -437,18 +457,18 @@
 
     .archive-wrap h2 {
       margin: 0;
-      font-size: clamp(28px, 4vw, 40px);
-      line-height: 1.1;
+      font-size: clamp(28px, 4vw, 45px);
+      line-height: 1.2;
       font-weight: 600;
-      letter-spacing: 0;
+      letter-spacing: -0.01em;
     }
 
     .archive-wrap p {
       margin: 0;
       max-width: 34ch;
-      font-size: 24px;
+      font-size: 19px;
       line-height: 1.5;
-      font-weight: 300;
+      font-weight: 400;
       color: var(--ink);
     }
 
@@ -465,8 +485,8 @@
       border-radius: var(--rounded-pill);
       border: 1px solid rgba(0, 0, 0, 0.08);
       padding: 12px 20px;
-      font-size: 17px;
-      line-height: 1.47;
+      font-size: 16px;
+      line-height: 1.5;
       color: var(--ink);
       background: var(--canvas);
       outline: none;
@@ -483,7 +503,7 @@
       text-align: left;
       font-size: 14px;
       line-height: 1.43;
-      color: var(--ink-muted);
+      color: var(--ink-soft);
     }
 
     .archive-grid {
@@ -497,17 +517,18 @@
     .card {
       background: var(--canvas);
       border: 1px solid var(--hairline);
-      border-radius: var(--rounded-lg);
+      border-radius: var(--rounded-md);
       padding: 24px;
       display: grid;
       gap: 18px;
+      box-shadow: var(--card-shadow);
     }
 
     .card h3 {
       margin: 0;
       font-size: 17px;
       line-height: 1.24;
-      letter-spacing: -0.374px;
+      letter-spacing: -0.01em;
       font-weight: 600;
     }
 
@@ -517,12 +538,13 @@
     }
 
     .draw-item {
-      border-radius: var(--rounded-lg);
+      border-radius: var(--rounded-md);
       border: 1px solid var(--hairline);
       background: var(--canvas);
       padding: 16px;
       display: grid;
       gap: 12px;
+      box-shadow: var(--card-shadow);
     }
 
     .draw-item__top {
@@ -536,13 +558,13 @@
     .draw-item__round {
       font-size: 14px;
       line-height: 1.29;
-      color: var(--ink-muted);
+      color: var(--ink-soft);
     }
 
     .draw-item__meta {
       font-size: 17px;
       line-height: 1.47;
-      letter-spacing: -0.374px;
+      letter-spacing: -0.01em;
       color: var(--ink);
     }
 
@@ -571,9 +593,9 @@
       gap: 6px;
       padding: 8px 14px;
       border-radius: var(--rounded-md);
-      background: var(--surface-pearl);
+      background: var(--canvas-warm);
       border: 1px solid var(--divider-soft);
-      color: var(--ink-muted);
+      color: var(--ink-soft);
       font-size: 14px;
       line-height: 1.43;
     }
@@ -590,8 +612,8 @@
       background: transparent;
       color: var(--primary);
       padding: 0;
-      font-size: 17px;
-      line-height: 1.47;
+      font-size: 16px;
+      line-height: 1.5;
       cursor: pointer;
     }
 
@@ -600,8 +622,8 @@
     }
 
     .footer {
-      background: var(--canvas-parchment);
-      border-top: 1px solid var(--hairline);
+      background: var(--surface-green);
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
       padding: 64px 0;
     }
 
@@ -610,17 +632,41 @@
       margin: 0 auto;
       display: grid;
       gap: 14px;
-      color: var(--ink-muted);
+      color: rgba(255, 255, 255, 0.7);
       font-size: 12px;
       line-height: 1.43;
     }
 
     .footer__title {
-      color: var(--ink);
+      color: #fff;
       font-size: 17px;
       line-height: 1.24;
-      letter-spacing: -0.374px;
+      letter-spacing: -0.01em;
       font-weight: 600;
+    }
+
+    .frap {
+      position: fixed;
+      right: 16px;
+      bottom: 16px;
+      width: 56px;
+      height: 56px;
+      border: 0;
+      border-radius: 50%;
+      background: var(--primary);
+      color: #fff;
+      display: grid;
+      place-items: center;
+      box-shadow: var(--frap-shadow);
+      cursor: pointer;
+      z-index: 40;
+      transition: transform 140ms ease, box-shadow 140ms ease;
+      font-size: 24px;
+      line-height: 1;
+    }
+
+    .frap:active {
+      transform: scale(0.95);
     }
 
     @keyframes ballPop {
@@ -725,7 +771,7 @@
       <nav class="global-nav__links" aria-label="Top links">
         <a href="#draw">추첨기</a>
         <a href="#history">기록</a>
-        <a href="#info">안내</a>
+        <a href="#archive">역대 추첨</a>
       </nav>
       <div class="global-nav__actions">
         <button class="nav-chip" id="copyBtnTop" type="button">복사</button>
@@ -748,11 +794,11 @@
     <section class="section tile tile--light hero">
       <div class="tile__inner hero-grid">
         <div>
-          <div class="eyebrow">Apple-style Lotto Experience</div>
-          <h1>번호를 가장 조용하게 뽑는 방법.</h1>
+          <div class="eyebrow">Starbucks-style Lotto Experience</div>
+          <h1>따뜻한 카페 무드로 뽑는 로또 추첨기.</h1>
           <p>
             1부터 45까지 중복 없이 6개와 보너스 1개를 추첨합니다.
-            UI는 사라지고, 번호만 남습니다.
+            스타벅스 톤의 크림 캔버스와 초록 CTA로 정리했습니다.
           </p>
           <div class="hero__actions">
             <button class="pill-button" id="drawBtnHero" type="button">추첨하기</button>
@@ -790,7 +836,7 @@
       <div class="machine__tile machine__tile--dark">
         <div class="machine__inner">
           <h2>추첨 화면</h2>
-          <p class="machine__lead">화면은 어둡게, 번호는 선명하게.</p>
+          <p class="machine__lead">House Green 밴드에서 번호가 또렷하게 보이도록 정리했습니다.</p>
           <div class="screen" aria-live="polite" aria-atomic="true">
             <div id="stage" class="screen__hint">
               아직 추첨 전입니다. 위의 추첨하기 버튼을 눌러주세요.
@@ -862,11 +908,13 @@
   <footer class="footer">
     <div class="footer__inner">
       <div class="footer__title">로또 추첨기</div>
-      <div>DESIGN-apple.md의 규칙을 따라 만든 단일 페이지 인터페이스입니다.</div>
-      <div>필요하면 다음 단계에서 더 Apple스럽게 세부 정렬, 마이크로 인터랙션, 모바일 sub-nav 축약까지 다듬을 수 있어요.</div>
+      <div>DESIGN-starbucks.md의 규칙을 따라 만든 단일 페이지 인터페이스입니다.</div>
+      <div>필요하면 다음 단계에서 더 스타벅스답게 세부 정렬, 마이크로 인터랙션, 모바일 sub-nav 축약까지 다듬을 수 있어요.</div>
     </div>
   </footer>
 
+  <button class="frap" id="frapBtn" type="button" aria-label="추첨하기">+</button>
+  <script src="lotto-history.js"></script>
   <script>
     const drawButtons = [
       document.getElementById('drawBtnHero'),
@@ -880,6 +928,7 @@
       document.getElementById('copyBtnTop')
     ];
     const resetButtons = [document.getElementById('resetBtnTop')];
+    const frapBtn = document.getElementById('frapBtn');
     const stage = document.getElementById('stage');
     const summaryBalls = document.getElementById('summaryBalls');
     const historyList = document.getElementById('historyList');
@@ -897,6 +946,7 @@
     const history = [];
     let isDrawing = false;
     let isLoadingArchive = false;
+    const officialHistory = Array.isArray(window.LOTTO_HISTORY) ? window.LOTTO_HISTORY : [];
 
     function shuffle(array) {
       for (let i = array.length - 1; i > 0; i -= 1) {
@@ -1000,6 +1050,22 @@
       archiveStatus.textContent = message;
     }
 
+    function normalizeOfficialRow(row) {
+      const numbers = Array.isArray(row.numbers) ? [...row.numbers].sort((a, b) => a - b) : [];
+      return {
+        drawNo: Number(row.ltEpsd),
+        drwNoDate: row.ltRflYmd || '',
+        main: numbers,
+        bonus: Number(row.bonus),
+        sum: numbers.reduce((acc, n) => acc + n, 0)
+      };
+    }
+
+    function findOfficialRow(roundNo) {
+      const row = officialHistory.find((item) => Number(item.ltEpsd) === Number(roundNo));
+      return row ? normalizeOfficialRow(row) : null;
+    }
+
     function renderArchiveCards(rows) {
       archiveGrid.innerHTML = '';
 
@@ -1035,31 +1101,6 @@
       });
     }
 
-    async function fetchLottoRound(roundNo) {
-      const url = `https://www.dhlottery.co.kr/common.do?method=getLottoNumber&drwNo=${roundNo}`;
-      const response = await fetch(url, { cache: 'no-store' });
-      if (!response.ok) return null;
-      const data = await response.json();
-      if (!data || data.returnValue !== 'success') return null;
-
-      const main = [
-        data.drwtNo1,
-        data.drwtNo2,
-        data.drwtNo3,
-        data.drwtNo4,
-        data.drwtNo5,
-        data.drwtNo6
-      ].sort((a, b) => a - b);
-
-      return {
-        drawNo: data.drwNo,
-        drwNoDate: data.drwNoDate,
-        main,
-        bonus: data.bnusNo,
-        sum: main.reduce((acc, n) => acc + n, 0)
-      };
-    }
-
     async function loadArchive(roundNo) {
       if (isLoadingArchive) return;
       isLoadingArchive = true;
@@ -1068,7 +1109,7 @@
       setArchiveStatus('불러오는 중입니다...');
 
       try {
-        const row = await fetchLottoRound(roundNo);
+        const row = findOfficialRow(roundNo);
         if (!row) {
           setArchiveStatus('해당 회차를 찾지 못했습니다. 다른 회차를 입력해보세요.');
           renderArchiveCards([]);
@@ -1095,14 +1136,9 @@
       setArchiveStatus('최근 회차를 찾는 중입니다...');
 
       try {
-        let latestRow = null;
-        for (let roundNo = 1300; roundNo >= 1; roundNo -= 1) {
-          const row = await fetchLottoRound(roundNo);
-          if (row) {
-            latestRow = row;
-            break;
-          }
-        }
+        const latestRow = officialHistory.length
+          ? normalizeOfficialRow(officialHistory[0])
+          : null;
 
         if (!latestRow) {
           setArchiveStatus('최근 회차를 자동으로 찾지 못했습니다.');
@@ -1110,17 +1146,13 @@
           return;
         }
 
-        const rows = [latestRow];
-        for (let offset = 1; offset < 8; offset += 1) {
-          const row = await fetchLottoRound(latestRow.drawNo - offset);
-          if (row) rows.push(row);
-        }
+        const rows = officialHistory.slice(0, 8).map(normalizeOfficialRow);
 
         archiveRoundInput.value = latestRow.drawNo;
         setArchiveStatus(`최근 ${rows.length}회 당첨번호를 불러왔습니다.`);
         renderArchiveCards(rows);
       } catch {
-        setArchiveStatus('최근 회차를 가져오지 못했습니다. 네트워크 연결을 확인해 주세요.');
+        setArchiveStatus('최근 회차를 가져오지 못했습니다.');
         renderArchiveCards([]);
       } finally {
         isLoadingArchive = false;
@@ -1196,6 +1228,9 @@
     drawButtons.forEach((button) => {
       if (button) button.addEventListener('click', drawLotto);
     });
+    if (frapBtn) {
+      frapBtn.addEventListener('click', drawLotto);
+    }
 
     copyButtons.forEach((button) => {
       if (button) button.addEventListener('click', copyLatest);
@@ -1218,6 +1253,10 @@
 
     setStageMessage();
     renderHistory();
+    if (officialHistory.length) {
+      setArchiveStatus(`역대 ${officialHistory.length}회 로또 번호를 사용할 수 있습니다.`);
+      renderArchiveCards(officialHistory.slice(0, 8).map(normalizeOfficialRow));
+    }
   </script>
 </body>
 </html>
