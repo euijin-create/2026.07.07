@@ -1093,6 +1093,11 @@
       saveStatus.dataset.tone = tone;
     }
 
+    function trackGaEvent(eventName, params = {}) {
+      if (typeof window.gtag !== 'function') return;
+      window.gtag('event', eventName, params);
+    }
+
     async function initSupabase() {
       if (location.protocol === 'file:') {
         setSaveStatus('로컬 파일로 열려 있어 Supabase 연결을 건너뜁니다.', '');
@@ -1137,6 +1142,10 @@
       await supabaseReadyPromise;
       if (!supabase) {
         setSaveStatus('Supabase 설정이 없어 현재는 로컬 추첨만 저장 중입니다.', '');
+        trackGaEvent('lotto_save_skipped', {
+          reason: 'supabase_not_configured',
+          round: draw.round
+        });
         return { saved: false, skipped: true };
       }
 
@@ -1148,10 +1157,17 @@
         .insert(payload);
 
       if (error) {
+        trackGaEvent('lotto_save_error', {
+          round: draw.round,
+          message: error.message || 'unknown_error'
+        });
         throw error;
       }
 
       setSaveStatus('Supabase에 저장 완료.', 'success');
+      trackGaEvent('lotto_save_success', {
+        round: draw.round
+      });
       return { saved: true };
     }
 
@@ -1289,6 +1305,13 @@
       renderStage(latest);
       renderSummary(latest);
       renderHistory();
+      trackGaEvent('lotto_draw', {
+        round: latest.round,
+        main_numbers: latest.main.join(','),
+        bonus_number: latest.bonus,
+        sum_total: latest.sum,
+        even_count: latest.evens
+      });
 
       void persistDraw(latest).catch((error) => {
         console.error('Supabase save failed:', error);
@@ -1322,6 +1345,9 @@
       const text = `로또 ${latest.round}회차: ${latest.main.join(', ')} + 보너스 ${latest.bonus}`;
       try {
         await navigator.clipboard.writeText(text);
+        trackGaEvent('lotto_copy_result', {
+          round: latest.round
+        });
         copyButtons.forEach((button) => {
           if (!button) return;
           const original = button.textContent;
