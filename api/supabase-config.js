@@ -1,0 +1,11 @@
+module.exports = (req, res) => {
+  const url = process.env.SUPABASE_URL || '';
+  const anonKey = process.env.SUPABASE_ANON_KEY || '';
+
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
+  res.setHeader('Cache-Control', 'no-store');
+  res.status(200).json({
+    url,
+    anonKey
+  });
+};

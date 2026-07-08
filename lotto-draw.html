@@ -607,6 +607,22 @@
       justify-content: center;
     }
 
+    .save-status {
+      min-height: 20px;
+      font-size: 13px;
+      line-height: 1.4;
+      color: rgba(255, 255, 255, 0.7);
+      text-align: center;
+    }
+
+    .save-status[data-tone="error"] {
+      color: #ffb4b4;
+    }
+
+    .save-status[data-tone="success"] {
+      color: #d4e9e2;
+    }
+
     .link-button {
       border: 0;
       background: transparent;
@@ -763,6 +779,14 @@
       }
     }
   </style>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-Y4MH2226PV"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-Y4MH2226PV');
+  </script>
 </head>
 <body>
   <header class="global-nav" aria-label="Global navigation">
@@ -846,6 +870,7 @@
             <button class="pill-button" id="drawBtnStage" type="button">추첨하기</button>
             <button class="ghost-pill" id="clearBtn" type="button">기록 비우기</button>
           </div>
+          <div id="saveStatus" class="save-status" aria-live="polite"></div>
         </div>
       </div>
 
@@ -916,6 +941,14 @@
   <button class="frap" id="frapBtn" type="button" aria-label="추첨하기">+</button>
   <script src="lotto-history.js"></script>
   <script>
+    // Supabase 연결 정보는 여기 채우면 됩니다.
+    window.SUPABASE_URL = '';
+    window.SUPABASE_ANON_KEY = '';
+    window.SUPABASE_TABLE = 'lotto_draws';
+  </script>
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
     const drawButtons = [
       document.getElementById('drawBtnHero'),
       document.getElementById('drawBtnStage'),
@@ -937,6 +970,7 @@
     const archiveRecentBtn = document.getElementById('archiveRecentBtn');
     const archiveStatus = document.getElementById('archiveStatus');
     const archiveGrid = document.getElementById('archiveGrid');
+    const saveStatus = document.getElementById('saveStatus');
     const roundValue = document.getElementById('roundValue');
     const sumValue = document.getElementById('sumValue');
     const evenValue = document.getElementById('evenValue');
@@ -947,6 +981,9 @@
     let isDrawing = false;
     let isLoadingArchive = false;
     const officialHistory = Array.isArray(window.LOTTO_HISTORY) ? window.LOTTO_HISTORY : [];
+    const supabaseTable = 'lotto_draws';
+    let supabase = null;
+    let supabaseReadyPromise = Promise.resolve();
 
     function shuffle(array) {
       for (let i = array.length - 1; i > 0; i -= 1) {
@@ -1048,6 +1085,74 @@
 
     function setArchiveStatus(message) {
       archiveStatus.textContent = message;
+    }
+
+    function setSaveStatus(message, tone = '') {
+      if (!saveStatus) return;
+      saveStatus.textContent = message;
+      saveStatus.dataset.tone = tone;
+    }
+
+    async function initSupabase() {
+      if (location.protocol === 'file:') {
+        setSaveStatus('로컬 파일로 열려 있어 Supabase 연결을 건너뜁니다.', '');
+        return null;
+      }
+
+      try {
+        setSaveStatus('Vercel 설정에서 Supabase 정보를 불러오는 중...', '');
+        const response = await fetch('/api/supabase-config', { headers: { accept: 'application/json' } });
+
+        if (!response.ok) {
+          throw new Error(`config request failed: ${response.status}`);
+        }
+
+        const config = await response.json();
+        if (!config?.url || !config?.anonKey) {
+          throw new Error('missing supabase config');
+        }
+
+        const client = createClient(config.url, config.anonKey);
+        setSaveStatus('Supabase 연결 완료.', 'success');
+        return client;
+      } catch (error) {
+        console.error('Supabase config load failed:', error);
+        setSaveStatus('Supabase 설정을 불러오지 못했습니다. Vercel 환경변수를 확인해 주세요.', 'error');
+        return null;
+      }
+    }
+
+    function buildDrawPayload(draw) {
+      return {
+        round_no: draw.round,
+        main_numbers: draw.main,
+        bonus_number: draw.bonus,
+        sum_total: draw.sum,
+        even_count: draw.evens,
+        created_at: new Date().toISOString()
+      };
+    }
+
+    async function persistDraw(draw) {
+      await supabaseReadyPromise;
+      if (!supabase) {
+        setSaveStatus('Supabase 설정이 없어 현재는 로컬 추첨만 저장 중입니다.', '');
+        return { saved: false, skipped: true };
+      }
+
+      setSaveStatus('Supabase에 저장 중...', '');
+
+      const payload = buildDrawPayload(draw);
+      const { error } = await supabase
+        .from(supabaseTable)
+        .insert(payload);
+
+      if (error) {
+        throw error;
+      }
+
+      setSaveStatus('Supabase에 저장 완료.', 'success');
+      return { saved: true };
     }
 
     function normalizeOfficialRow(row) {
@@ -1185,6 +1290,11 @@
       renderSummary(latest);
       renderHistory();
 
+      void persistDraw(latest).catch((error) => {
+        console.error('Supabase save failed:', error);
+        setSaveStatus('Supabase 저장에 실패했습니다. 로컬 추첨은 유지됩니다.', 'error');
+      });
+
       isDrawing = false;
       drawButtons.forEach((button) => {
         if (button) button.disabled = false;
@@ -1253,6 +1363,10 @@
 
     setStageMessage();
     renderHistory();
+    supabaseReadyPromise = initSupabase().then((client) => {
+      supabase = client;
+      return client;
+    });
     if (officialHistory.length) {
       setArchiveStatus(`역대 ${officialHistory.length}회 로또 번호를 사용할 수 있습니다.`);
       renderArchiveCards(officialHistory.slice(0, 8).map(normalizeOfficialRow));
